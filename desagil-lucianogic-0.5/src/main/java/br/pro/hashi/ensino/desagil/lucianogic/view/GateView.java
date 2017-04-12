@@ -18,7 +18,7 @@ import br.pro.hashi.ensino.desagil.lucianogic.model.Gate;
 import br.pro.hashi.ensino.desagil.lucianogic.model.Switch;
 
 
-public class GateView extends FixedPanel implements ItemListener, MouseListener {
+public class GateView extends FixedPanel implements ItemListener {
 
 	// Necessario para serializar objetos desta classe.
 	private static final long serialVersionUID = 1L;
@@ -28,11 +28,12 @@ public class GateView extends FixedPanel implements ItemListener, MouseListener 
 
 	private JCheckBox[] inBoxes;
 	private JCheckBox outBox;
+	public boolean[] alavancas;
 
 	private Switch[] switches;
 	private Gate gate;
-	public int x, y,x1,y1;
-	public boolean alavanca=false;
+	public int x, y,x1,y1,x2,y2,rectwidth,rectheight;
+	public Ellipse2D[] oval;
 
 
 	public GateView(Gate gate) {
@@ -47,8 +48,11 @@ public class GateView extends FixedPanel implements ItemListener, MouseListener 
 		inBoxes = new JCheckBox[size];
 
 		switches = new Switch[size];
+		alavancas = new boolean[size];
 
 		for(int i = 0; i < size; i++) {
+			boolean alavanca = false;
+			alavancas[i]= alavanca;
 			inBoxes[i] = new JCheckBox();
 
 			inBoxes[i].addItemListener(this);
@@ -62,14 +66,14 @@ public class GateView extends FixedPanel implements ItemListener, MouseListener 
 
 		outBox.setEnabled(false);
 
-		if(size == 1) {
-			add(inBoxes[0], 0, 60, 20, 20);			
-		}
-		else {
-			for(int i = 0; i < size; i++) {
-				add(inBoxes[i], 0, (i + 1) * 40, 20, 20);			
-			}			
-		}
+//		if(size == 1) {
+//			add(inBoxes[0], 0, 60, 20, 20);			
+//		}
+//		else {
+//			for(int i = 0; i < size; i++) {
+//				add(inBoxes[i], 0, (i + 1) * 40, 20, 20);			
+//			}			
+//		}
 
 		add(outBox, 184, 60, 20, 20);
 
@@ -104,72 +108,84 @@ public class GateView extends FixedPanel implements ItemListener, MouseListener 
 	public void paintComponent(Graphics g) {
 		// Evita bugs visuais em alguns sistemas operacionais.
 		super.paintComponent(g);
-
-		g.drawImage(image, 10, 20, 184, 140, null);
-		
-		Graphics2D g2 = (Graphics2D) g;
 		x=10;
 		y=10;
-		int x2=5;
-		int y2=5;
-		int rectwidth =10;
-		int rectheight=10;
-//		Ellipse2D oval = new Ellipse2D.Double(x, y, rectwidth, rectheight);
-		g2.draw(new Ellipse2D.Double(x, y,
-                rectwidth,
-                rectheight));
-		if (alavanca == true){
-		g2.draw(new Line2D.Double(x, y, x2, y2));
-		}else{
-			g2.draw(new Line2D.Double(x, y, (-x2), (-y2)));
-			alavanca=false;
+		x1=5;
+		y1=5;
+		x2=x1+30;
+		y2=y1;
+		rectwidth =10;
+		rectheight=10;
+		int size = gate.getSize();
+		oval = new Ellipse2D[size];
+		Graphics2D g2 = (Graphics2D) g;
+		if(size == 1) {
+			oval[0] = new Ellipse2D.Double(0, 60, rectwidth, rectheight);
+			g2.draw(oval[0]);	
+			if (alavancas[0] == true){
+				g2.draw(new Line2D.Double(x, y, x1, y1));
+				}else{
+					g2.draw(new Line2D.Double(x, y, x2, y2));
+					alavancas[0]=false;
+				}
 		}
+		else {
+			for(int i = 0; i < size; i++) {
+				oval[i] = new Ellipse2D.Double(0, (i + 1) * 40, rectwidth, rectheight);
+				g2.draw(oval[i]);
+				if (alavancas[i] == true){
+					g2.draw(new Line2D.Double(0, (i + 1) * 40, x2, ((i + 1) * 40)+10));
+					}else{
+						g2.draw(new Line2D.Double(0, (i + 1) * 40, x1, ((i + 1) * 40)+10));
+						alavancas[i]=false;
+					}
+			}			
+		}
+		g.drawImage(image, 10, 20, 184, 140, null);
+
+		addMouseListener(new MouseListener(){
+			public void mouseClicked(MouseEvent e) {
+				int i=0;
+				for(i = 0; i < size; i++) {
+                if (oval[i].contains(e.getPoint())) {
+                	System.out.println(i);
+                    break;
+                }  
+                }
+
+					switches[(i)].setOn(alavancas[i]);
+	                alavancas[i] = !alavancas[i];
+					outBox.setSelected(gate.read());
+				
+                repaint();
+            }
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+        });
 		
 
 		// Evita bugs visuais em alguns sistemas operacionais.
 		getToolkit().sync();
-    }
-
-
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
-		if ((e.getButton() == 1) && e.getX() == x && e.getY()==y ) {
-			System.out.println("opa");
-		      repaint();
-		    // JOptionPane.showMessageDialog(null,e.getX()+ "\n" + e.getY());
-		   }
-	}
-
-
-	@Override
-	public void mousePressed(MouseEvent e) {
-		// TODO Auto-generated method stub
-		if ((e.getButton() == 1) && e.getX() == x && e.getY()==y ) {
-			System.out.println("opa");
-		      repaint();
-		    // JOptionPane.showMessageDialog(null,e.getX()+ "\n" + e.getY());
-		   }
-	}
-
-
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-}
+    }}
