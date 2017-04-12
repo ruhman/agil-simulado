@@ -114,8 +114,8 @@ public class GateView extends FixedPanel implements ItemListener {
 		y1=5;
 		x2=x1+30;
 		y2=y1;
-		rectwidth =10;
-		rectheight=10;
+		rectwidth =30;
+		rectheight=30;
 		int size = gate.getSize();
 		oval = new Ellipse2D[size];
 		Graphics2D g2 = (Graphics2D) g;
@@ -148,15 +148,16 @@ public class GateView extends FixedPanel implements ItemListener {
 				int i=0;
 				for(i = 0; i < size; i++) {
                 if (oval[i].contains(e.getPoint())) {
-                	System.out.println(i);
+//                	System.out.println(i);
                     break;
                 }  
                 }
-
+				if (i != 2){
+				System.out.println(i);
+				alavancas[i] = !alavancas[i];
 					switches[(i)].setOn(alavancas[i]);
-	                alavancas[i] = !alavancas[i];
 					outBox.setSelected(gate.read());
-				
+				}
                 repaint();
             }
 
